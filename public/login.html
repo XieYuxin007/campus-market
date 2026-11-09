@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8"><title>登录/注册</title>
+  <style>
+    body { background: #f0f2f5; display: flex; justify-content: center; align-items: center; height: 100vh; font-family: sans-serif; margin: 0; }
+    .box { background: white; padding: 30px; border-radius: 10px; width: 320px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
+    input, select, button { width: 100%; padding: 10px; margin: 8px 0; border: 1px solid #ccc; border-radius: 5px; box-sizing: border-box; }
+    button { background: #1677ff; color: white; border: none; cursor: pointer; }
+    .toggle { text-align: center; font-size: 13px; color: #666; cursor: pointer; margin-top: 10px; }
+  </style>
+</head>
+<body>
+  <div class="box">
+    <h3 id="title" style="text-align:center">登录</h3>
+    <input id="username" placeholder="用户名">
+    <input id="password" type="password" placeholder="密码">
+    <select id="role" style="display:none">
+      <option value="student">普通学生</option>
+      <option value="admin">管理员</option>
+    </select>
+    <button onclick="submit()" id="btn">登录</button>
+    <div class="toggle" onclick="toggle()" id="tip">没有账号？去注册</div>
+  </div>
+  <script>
+    let isLogin = true;
+    function toggle() {
+      isLogin = !isLogin;
+      document.getElementById('title').innerText = isLogin ? '登录' : '注册';
+      document.getElementById('btn').innerText = isLogin ? '登录' : '注册';
+      document.getElementById('role').style.display = isLogin ? 'none' : 'block';
+      document.getElementById('tip').innerText = isLogin ? '没有账号？去注册' : '已有账号？去登录';
+    }
+    async function submit() {
+      const u = document.getElementById('username').value;
+      const p = document.getElementById('password').value;
+      const r = document.getElementById('role').value;
+      const res = await fetch(isLogin ? '/api/login' : '/api/register', {
+        method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify({username:u, password:p, role:r})
+      });
+      const d = await res.json();
+      if (d.success) {
+        if (isLogin) {
+          localStorage.setItem('user', JSON.stringify(d.user));
+          location.href = d.user.role === 'admin' ? '/admin.html' : '/index.html';
+        } else { alert('注册成功'); toggle(); }
+      } else alert(d.message);
+    }
+  </script>
+</body>
+</html>
